@@ -5,16 +5,33 @@
     );
 
     error_reporting(E_ALL);
+
     ini_set('display_errors', true);
+
     $config_file = "settings.ini";
     $config = parse_ini_file( $config_file );
 
-    var_dump( $config );
-    $type = "diff";
+    if( array_key_exists("backup_location", $config ) === false )
+    {
+        $backup_location = dirname(__FILE__);
+    }
+    else
+    {
+        $backup_location = $config["backup_location"];
+    }
 
     if( $argc > 1 )
     {
         $type = $argv[ 1 ];
+        if( array_key_exists($type, $proc) === false )
+        {
+            echo "Unknown method DIFF being used\n";
+            $type = "diff";
+        }
+    }
+    else
+    {
+        $type = "diff";
     }
 
     foreach( $config["dsn"] as $database => $dsn )
@@ -31,12 +48,6 @@
             echo "Database connection failed\n";
             //die( $e->getMessage()."\n" );
             continue;
-        }
-
-        if( array_key_exists($type, $proc) === false )
-        {
-            echo "Unknown method DIFF being used\n";
-            $type = "diff";
         }
 
         $stmt = $db->query( $proc[ $type ] );
